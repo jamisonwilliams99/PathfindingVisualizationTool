@@ -10,12 +10,12 @@ def get_key(dict, val):
 
 class Node:
     def __init__(self, n, n_val):
-        self.name = n
-        self.value = n_val
-        self.adj_list = list()
-        self.distance = sys.maxsize
-        self.visited = False
-        self.pred_node = 0
+        self.name = n               # will be used as the node's key in the dictionary
+        self.value = n_val          # will store the list containing the node's coordinates on the grid
+        self.adj_list = list()      # will store the keys of the nodes that are adjacent to the node
+        self.distance = sys.maxsize # intialize the distance of each node to "infinity"
+        self.visited = False        
+        self.pred_node = 0          # initialize the predecessor node to 0
 
     # adds a adjacent node to the current node's adjacency list
     def add_adj_node(self, adjNode):
@@ -58,6 +58,7 @@ class Graph:
         self.vertices = {}
         self.num_vertices = 0
 
+    # method that will add a vertex to the graph
     def add_vertex(self, vertex):
         if isinstance(vertex, Node) and vertex.name not in self.vertices:
             self.vertices[vertex.name] = vertex
@@ -66,18 +67,22 @@ class Graph:
         else:
             return False
 
+    # method that removes a vertex from the graph (used for placing "wall nodes" in the grid)
     def remove_vertex(self, node_key):
         self.get_vertices().pop(node_key)
 
+    # returns the vertex given the vertex key
     def get_vertex(self, n):
         if n in self.vertices:
             return self.vertices[n]
         else:
             return None
 
+    # returns the dictionary that contains the vertices
     def get_vertices(self):
         return self.vertices
 
+    #returns the number of vertices in the graph
     def get_numVertices(self):
         return self.num_vertices
 
@@ -89,6 +94,7 @@ class Graph:
                     value.add_adj_node(v)
                 if key == v:
                     value.add_adj_node(u)
+
 
     def min_distance(self, dist, shortest_path_set):
         # minimum distance for next node
@@ -102,7 +108,7 @@ class Graph:
 
         return min_index
 
-
+    # method that will determine the adjacency of each node in the grid
     def det_adjacent_nodes(self):
         "key 0-25, val [0,0]-[3,3]"
         for key in self.vertices:
@@ -146,75 +152,10 @@ def det_min_distance(queue):
             min_index = i
     return min_index
 
-
-def djikstra(graph, start, end):
-    start_node = graph.get_vertex(start)
-
-    unvisited_queue = []
-    for node in graph.get_vertices().values():
-        unvisited_queue.append(node)
-
-    # set the distance of the start node to 0
-    start_node.set_distance(0)
-
-    # while unvisited_queue is not empty
-    while len(unvisited_queue):
-        # need to pop the vertex with the shortest distance from the start node
-
-        cur_node = unvisited_queue.pop(det_min_distance(unvisited_queue))
-
-        # for nodes adjacent to cur_node
-        for adjV in cur_node.get_neighbors():
-            adj_node = graph.get_vertex(adjV)
-            alt_path_dist = cur_node.get_distance() + 1
-            if alt_path_dist < adj_node.get_distance():
-                adj_node.set_distance(alt_path_dist)
-                adj_node.set_pred_node(cur_node)
-
-    cur_node = graph.get_vertex(end).get_pred_node()
-    shortest_path = []
-    while cur_node != start_node:
-
-        shortest_path.insert(0, cur_node.get_name())
-        cur_node = cur_node.get_pred_node()
-    return shortest_path
-
-
-def djikstra(graph, start, end):
-    start_node = graph.get_vertex(start)
-
-    unvisited_queue = []
-    for node in graph.get_vertices().values():
-        unvisited_queue.append(node)
-
-    # set the distance of the start node to 0
-    start_node.set_distance(0)
-
-    # while unvisited_queue is not empty
-    while len(unvisited_queue):
-        # need to pop the vertex with the shortest distance from the start node
-
-        cur_node = unvisited_queue.pop(det_min_distance(unvisited_queue))
-
-        # for nodes adjacent to cur_node
-        for adjV in cur_node.get_neighbors():
-            adj_node = graph.get_vertex(adjV)
-            alt_path_dist = cur_node.get_distance() + 1
-            if alt_path_dist < adj_node.get_distance():
-                adj_node.set_distance(alt_path_dist)
-                adj_node.set_pred_node(cur_node)
-
-    cur_node = graph.get_vertex(end).get_pred_node()
-    shortest_path = []
-    while cur_node != start_node:
-
-        shortest_path.insert(0, cur_node.get_name())
-        cur_node = cur_node.get_pred_node()
-    return shortest_path
-
     
 def djikstra(graph, start, end):
     start_node = graph.get_vertex(start)
+    visited_nodes = []
 
     unvisited_queue = []
     for node in graph.get_vertices().values():
@@ -228,6 +169,9 @@ def djikstra(graph, start, end):
         # need to pop the vertex with the shortest distance from the start node
 
         cur_node = unvisited_queue.pop(det_min_distance(unvisited_queue))
+
+        if cur_node.get_name() != start:
+            visited_nodes.append(cur_node.get_name())
 
         # for nodes adjacent to cur_node
         for adjV in cur_node.get_neighbors():
@@ -243,24 +187,16 @@ def djikstra(graph, start, end):
 
         shortest_path.insert(0, cur_node.get_name())
         cur_node = cur_node.get_pred_node()
-    return shortest_path
+    return shortest_path, visited_nodes
 
 
 
 
-
+# test main() for testing the Node and Graph class
 def main():
     V = 16
     numRows = 4
     numCol = 4
-    """
-    grid = [
-        [0, 0], [1, 0], [2, 0], [3, 0],
-        [0, 1], [1, 1], [2, 1], [3, 1],
-        [0, 2], [1, 2], [2, 2], [3, 2],
-        [0, 3], [1, 3], [2, 3], [3, 3]
-    ]
-    """
     grid = [
         [[0, 0], [1, 0], [2, 0], [3, 0]],
         [[0, 1], [1, 1], [2, 1], [3, 1]],
@@ -286,30 +222,4 @@ def main():
 
 
 #main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
