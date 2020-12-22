@@ -1,5 +1,7 @@
 import sys
 import pygame
+import random
+
 
 # returns the key in a dictionary given the value
 def get_key(dict, val):
@@ -129,6 +131,7 @@ class Graph:
                 #print(str(key) + " is adjacent to " + str(get_key(self.vertices, top)))
 
 
+
     def print_vertices(self):
         for key, value in self.vertices.items():
             print(key)
@@ -143,6 +146,8 @@ class Graph:
         for key, value in self.vertices.items():
             #print(str(key) + "'s predecessor is: " + str(value.get_pred_node().get_name()))
             print(str(key) + ": " + str(value.get_distance()))
+
+
 
 
 def det_min_distance(queue):
@@ -190,6 +195,7 @@ def djikstra(graph, start, end):
     return shortest_path, visited_nodes
 
 
+                
 
 
 # test main() for testing the Node and Graph class
@@ -210,15 +216,13 @@ def main():
         for column in range(numCol):
             graph.add_vertex(Node(str(grid[row][column]), grid[row][column]))
 
-    graph.remove_vertex("[1, 2]")
+    walls = []
+    doors = []
+    recursive_maze(graph, 0, 0, 4, 4, walls, doors)
 
-    #graph.print_vertices()
+    print(walls)
 
-    graph.det_adjacent_nodes()
-
-    djikstra(graph, str([0,2]), str([2, 2]))
-
-    #graph.print_pred_nodes_distance()
+    
 
 
 #main()
