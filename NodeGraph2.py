@@ -16,10 +16,29 @@ class Node:
         self.value = n_val          # will store the list containing the node's coordinates on the grid
         self.adj_list = list()      # will store the keys of the nodes that are adjacent to the node
         self.distance = sys.maxsize # intialize the distance of each node to "infinity"
-        self.visited = False        
+        self.visited = False
+        self.is_wall_node = False
+        self.is_checked_node = False
+        self.is_path_node = False  
+        self.is_start_node = False
+        self.is_target_node = False      
         self.pred_node = 0          # initialize the predecessor node to 0
-        
 
+    def set_is_wall_node(self):
+        self.is_wall_node = True
+    
+    def set_is_checked_node(self):
+        self.is_checked_node = True
+    
+    def set_is_path_node(self):
+        self.is_path_node = True
+    
+    def set_is_start_node(self):
+        self.is_start_start_node = True
+    
+    def set_is_target_node(self):
+        self.is_start_start_node = True
+        
     # adds a adjacent node to the current node's adjacency list
     def add_adj_node(self, adjNode):
         if adjNode not in self.adj_list:
@@ -63,9 +82,48 @@ class Graph:
         self.start_node = None
         self.target_node = None
     
-    def reset_graph(self):
-        self.vertices.clear()
-        self.num_vertices = 0
+    # there can only be one start node
+    def set_start_node(self, node):
+        if self.start_node == None:
+            self.start_node = node
+            self.start_node.set_is_start_node()
+
+    # there can only be one target node
+    def set_target_node(self, node):
+        if self.target_node == None:
+            self.target_node = node
+            self.target_node.set_is_target_node()
+    
+    def set_wall_node(self, node):
+        node.set_is_wall_node()
+
+    def set_checked_node(self, node):
+        node.set_is_checked_node()
+    
+    def set_path_node(self, node):
+        node.set_is_path_node()
+    
+
+    def get_start_node(self):
+        return self.start_node
+    
+    def get_target_node(self):
+        return self.target_node
+
+    # returns True if parameter node is the start node
+    def is_start_node(self, node): 
+        if self.start_node == None:
+            return False
+        if node.get_value() == self.start_node.get_value(): return True 
+        else: return False
+       
+    # returns True if parameter node is the target node
+    def is_target_node(self, node): 
+        if self.target_node == None:
+            return False
+        if node.get_value() == self.target_node.get_value(): return True 
+        else: return False
+    
 
     # method that will add a vertex to the graph
     def add_vertex(self, vertex):
@@ -165,8 +223,7 @@ def det_min_distance(queue):
     return min_index
 
     
-def djikstra(graph, start, end):
-    start_node = graph.get_vertex(start)
+def djikstra(graph):
     visited_nodes = []
 
     unvisited_queue = []
@@ -174,7 +231,7 @@ def djikstra(graph, start, end):
         unvisited_queue.append(node)
 
     # set the distance of the start node to 0
-    start_node.set_distance(0)
+    graph.get_start_node().set_distance(0)
 
     # while unvisited_queue is not empty
     while len(unvisited_queue):
@@ -182,7 +239,7 @@ def djikstra(graph, start, end):
 
         cur_node = unvisited_queue.pop(det_min_distance(unvisited_queue))
 
-        if cur_node.get_name() != start:
+        if cur_node.get_name() != graph.get_start_node().get_name():
             visited_nodes.append(cur_node.get_name())
 
         # for nodes adjacent to cur_node
@@ -193,9 +250,9 @@ def djikstra(graph, start, end):
                 adj_node.set_distance(alt_path_dist)
                 adj_node.set_pred_node(cur_node)
 
-    cur_node = graph.get_vertex(end).get_pred_node()
+    cur_node = graph.get_target_node().get_pred_node()
     shortest_path = []
-    while cur_node != start_node:
+    while cur_node != graph.get_start_node():
 
         shortest_path.insert(0, cur_node.get_name())
         cur_node = cur_node.get_pred_node()
@@ -203,7 +260,6 @@ def djikstra(graph, start, end):
 
 
                 
-
 
 # test main() for testing the Node and Graph class
 def main():

@@ -2,8 +2,16 @@
 Visualizer for djikstra's algorithm
 """
 import pygame
-from NodeGraph import *
+from NodeGraph2 import *
 
+
+#### Helper functions ####
+def conv_screen_to_grid(pos):
+    column = pos[0] // (WIDTH + MARGIN)
+    row = pos[1] // (HEIGHT + MARGIN)
+    return column, row
+
+pygame.init()
 
 #########Colors##########
 WHITE = (255,255,255)
@@ -28,17 +36,6 @@ x_offset = MARGIN+WIDTH
 y_offset = MARGIN+HEIGHT
 #########END Sizing###########
 
-
-#### Helper functions ####
-def conv_screen_to_grid(pos):
-    column = pos[0] // (WIDTH + MARGIN)
-    row = pos[1] // (HEIGHT + MARGIN)
-    return column, row
-    
-####END HELPER FUNCTIONS####
-
-pygame.init()
-
 # create 2-d grid array (which will be loaded to graph)
 grid = [[[x,y] for x in range(numRows)] for y in range(numColumns)]
 
@@ -51,7 +48,7 @@ for row in range(numRows):
     for column in range(numColumns):
         vertex_key = str(grid[row][column]) # a string version of the coordinate is used as the nodes key
         graph.add_vertex(Node(vertex_key, grid[row][column]))
-top = pygame.display.set_mode([20, SCREEN_SIZE])
+
 screen = pygame.display.set_mode([SCREEN_SIZE, SCREEN_SIZE])
 pygame.display.update()
 
@@ -63,6 +60,7 @@ for row in range(numRows):
                          [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
 
 #********************GAME LOOP********************#
+node_select_count = 0
 
 ### runtime flags ###
 running = True
@@ -70,9 +68,8 @@ start_node_placed = False
 target_node_placed = False
 pressed_r = False
 finished = False
-###END RUNTIME FLAGS#####
 
-node_select_count = 0
+
 visited_nodes = []
 while running:
     screen.fill(BLACK)
@@ -85,87 +82,75 @@ while running:
                 elif event.type == pygame.MOUSEBUTTONDOWN and not start_node_placed:
                     pos = pygame.mouse.get_pos()
                     column, row = conv_screen_to_grid(pos)  #convert the screen coordinates to grid coordinates
-                    start_node = str([column, row])
-                    grid[row][column] = 1   # will cause the node to turn green when drawn again
+                    graph.set_start_node(graph.get_vertex(str([column, row])))
                     start_node_placed = True
+
                 elif event.type == pygame.MOUSEBUTTONDOWN and not target_node_placed:
                     pos = pygame.mouse.get_pos()
-                    print(pos)
                     column, row = conv_screen_to_grid(pos)  # convert the screen coordinates to grid coordinates
-                    end_node = str([column, row])
-                    if grid[row][column] != 1:
-                        grid[row][column] = 2   # will cause the node to turn red when drawn again
-                        target_node_placed = True
+                    graph.set_target_node(graph.get_vertex(str([column, row])))
+                    target_node_placed = True
+
                 elif pygame.mouse.get_pressed()[0] and start_node_placed and target_node_placed:
                         pos = pygame.mouse.get_pos()
                         column, row = conv_screen_to_grid(pos)  # convert the screen coordinates to grid coordinates
-                        wall_node = str([column, row])
-                        if grid[row][column] != 1 and grid[row][column] != 2:
-                            graph.remove_vertex(wall_node)
-                            grid[row][column] = 3  # will cause the node to turn black when drawn again
+                        node_key = str([column, row])
+                        temp_node = graph.get_vertex(node_key)
+                        if not graph.is_start_node(temp_node) and not graph.is_target_node(temp_node):
+                            graph.set_wall_node(temp_node)
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         graph.det_adjacent_nodes()              # calls function to determine the adjacent nodes in the grid
-                        shortest_path, visited_nodes = djikstra(graph, start_node, end_node)   # calls function that performs the pathfinding algorithm on the grid
-                        pressed_r = True
-                    if event.key == pygame.K_t:
-                        graph.reset_graph()
-                        grid = [[[x,y] for x in range(numRows)] for y in range(numColumns)]
-                        # take each element(node) from the grid array, which is [x, y], and load it to the graph as a vertex
-                        for row in range(numRows):
-                            for column in range(numColumns):
-                                vertex_key = str(grid[row][column]) # a string version of the coordinate is used as the nodes key
-                                graph.add_vertex(Node(vertex_key, grid[row][column]))
-                        start_node_placed = False
-                        target_node_placed = False
-                        pressed_r = False
-                        finished = False
+                        shortest_path, visited_nodes = djikstra(graph)   # calls function that performs the pathfinding algorithm on the grid
+                        pressed_r = True  
+
                         
                 # end event handler
         except KeyError:
             pass
     
-    if pressed_r and not finished:
+    if pressed_r:
         if visited_nodes:
-            node_coord = graph.get_vertex(visited_nodes.pop(0)).get_value()
-            if str(node_coord) != end_node and not finished:
-                column = node_coord[0]
-                row = node_coord[1]
-                grid[row][column] = 4
+            visited_node = graph.get_vertex(visited_nodes.pop(0))
+            if not graph.is_target_node(visited_node) and not finished:
+                graph.set_is_checked_node(visited_node)
             else:
-                for node_key in shortest_path:
-                    node_coord = graph.get_vertex(node_key).get_value()
-                    column = node_coord[0]
-                    row = node_coord[1]
-                    grid[row][column] = 5
                 finished = True 
-                pressed_r = False
-                    
+                for node_key in shortest_path:
+                    path_node = graph.get_vertex(node_key)
+                    graph.set_is_path_node(path_node)
+
+
 
     #Draw grid
     for row in range(numRows):
         for column in range(numColumns):
+            node_key = str(grid[row][column])
+            temp_node = graph.get_vertex(node_key)
             color = WHITE
-            if grid[row][column] == 4:
+            if temp_node.is_checked_node:
                 color = YELLOW
             pygame.draw.rect(screen, color,
                              [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 5:
+            if temp_node.is_path_node:
                 color = BLUE
             pygame.draw.rect(screen, color,
                              [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 1:
+            if graph.is_start_node(temp_node):
                 color = GREEN
             pygame.draw.rect(screen, color,
                              [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 2:
+            if graph.is_target_node(temp_node):
                 color = RED
             pygame.draw.rect(screen, color,
                              [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 3:
+            if temp_node.is_wall_node:
                 color = BLACK
+                #graph.remove_vertex(node_key)
             pygame.draw.rect(screen, color,
                              [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+                             
             
             
 
