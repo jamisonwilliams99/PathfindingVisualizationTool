@@ -4,7 +4,6 @@ import random
 
 # returns the key in a dictionary given the value
 def get_key(dict, val):
-
     for key, node in dict.items():
         if val == node.value:
             return key
@@ -76,6 +75,7 @@ class Graph:
         else:
             return False
     
+    # method that will store a vertex that is removed from the graph (in case it needs to be readded to the graph)
     def store_removed_vertex(self, node_key):
         removed_vertex = self.get_vertex(node_key)
         if isinstance(removed_vertex, Node) and node_key not in self.removed_vertices:
@@ -122,7 +122,6 @@ class Graph:
                 if key == v:
                     value.add_adj_node(u)
 
-
     def min_distance(self, dist, shortest_path_set):
         # minimum distance for next node
         min = sys.maxsize
@@ -155,12 +154,9 @@ class Graph:
                 self.add_edge(key, get_key(self.vertices, top))
                 #print(str(key) + " is adjacent to " + str(get_key(self.vertices, top)))
 
-
-
     def print_vertices(self):
         for key, value in self.vertices.items():
             print(key)
-
 
     def print_graph(self):
         for i in range(self.V):

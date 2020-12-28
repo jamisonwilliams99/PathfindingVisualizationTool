@@ -89,8 +89,36 @@ def button_clicked(pos, x, y, width, height):
         return True
     else: 
         return False
-        
 
+def draw_grid(grid):
+    for row in range(numRows):
+        for column in range(numColumns):
+            color = WHITE
+            if grid[row][column] == 4:
+                color = YELLOW
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+            if grid[row][column] == 5:
+                color = BLUE
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+            if grid[row][column] == 1:
+                color = GREEN
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+            if grid[row][column] == 2:
+                color = RED
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+            if grid[row][column] == 3:
+                color = BLACK
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+            if grid[row][column] == 0:
+                color = WHITE
+            pygame.draw.rect(screen, color,
+                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+        
 
 ####END HELPER FUNCTIONS####
 
@@ -111,12 +139,7 @@ for row in range(numRows):
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 pygame.display.update()
 
-# Draw grid
-for row in range(numRows):
-    for column in range(numColumns):
-        color = WHITE
-        pygame.draw.rect(screen, color,
-                         [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+
 
 
 
@@ -161,23 +184,27 @@ while running:
                             start_node = str([column, row])
                             grid[row][column] = 1   # will cause the node to turn green when drawn again
                             start_node_placed = True
+
                     elif end_selected:
                         end_node = str([column, row])
                         if grid[row][column] != 1 and not end_node_placed:
                             grid[row][column] = 2   # will cause the node to turn red when drawn again
                             end_node_placed = True
+
                     elif wall_selected:
                         wall_node = str([column, row])
-                        if grid[row][column] != 1 and grid[row][column] != 2:
-                            graph.remove_vertex(wall_node)
-                            grid[row][column] = 3  # will cause the node to turn black when drawn again
-                        elif grid[row][column] == 3:
+                        if grid[row][column] == 3:
                             graph.add_removed_vertex(wall_node)
                             grid[row][column] = 0
+
                     elif run_selected:
-                        print("running...")
-                        graph.det_adjacent_nodes()              # calls function to determine the adjacent nodes in the grid
-                        shortest_path, visited_nodes = djikstra(graph, start_node, end_node)   # calls function that performs the pathfinding algorithm on the grid
+                        if start_node_placed and end_node_placed:
+                            print("running...")
+                            graph.det_adjacent_nodes()              # calls function to determine the adjacent nodes in the grid
+                            shortest_path, visited_nodes = djikstra(graph, start_node, end_node)   # calls function that performs the pathfinding algorithm on the grid
+                        else:
+                            print("Must place start and end nodes before running Djikstra's algorithm")
+
                     elif clear_selected:
                         graph.reset_graph()
                         grid = [[[x,y] for x in range(numRows)] for y in range(numColumns)]
@@ -191,32 +218,14 @@ while running:
                         start_node_placed = False
                         end_node_placed = False
 
-                    """
-                    elif pygame.mouse.get_pressed()[0] and wall_selected:
-                            wall_node = str([column, row])
-                            if grid[row][column] != 1 and grid[row][column] != 2:
-                                graph.remove_vertex(wall_node)
-                                grid[row][column] = 3  # will cause the node to turn black when drawn again
-                           
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_r:
-                        graph.det_adjacent_nodes()              # calls function to determine the adjacent nodes in the grid
-                        shortest_path, visited_nodes = djikstra(graph, start_node, end_node)   # calls function that performs the pathfinding algorithm on the grid
-                        pressed_r = True
-                    if event.key == pygame.K_c:
-                        graph.reset_graph()
-                        grid = [[[x,y] for x in range(numRows)] for y in range(numColumns)]
-                        # take each element(node) from the grid array, which is [x, y], and load it to the graph as a vertex
-                        for row in range(numRows):
-                            for column in range(numColumns):
-                                vertex_key = str(grid[row][column]) # a string version of the coordinate is used as the nodes key
-                                graph.add_vertex(Node(vertex_key, grid[row][column]))
-                        start_node_placed = False
-                        target_node_placed = False
-                        pressed_r = False
-                        finished = False
-                """
-                        
+                elif pygame.mouse.get_pressed()[0] and wall_selected:
+                    pos = pygame.mouse.get_pos()
+                    column, row = conv_screen_to_grid(pos)  #convert the screen coordinates to grid coordinates
+                    wall_node = str([column, row])
+
+                    if grid[row][column] != 1 and grid[row][column] != 2:
+                        graph.remove_vertex(wall_node)
+                        grid[row][column] = 3  # will cause the node to turn black when drawn again
                 # end event handler
         except KeyError:
             pass
@@ -241,41 +250,14 @@ while running:
                     
 
     #Draw grid
-    for row in range(numRows):
-        for column in range(numColumns):
-            color = WHITE
-            if grid[row][column] == 4:
-                color = YELLOW
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 5:
-                color = BLUE
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 1:
-                color = GREEN
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 2:
-                color = RED
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 3:
-                color = BLACK
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
-            if grid[row][column] == 0:
-                color = WHITE
-            pygame.draw.rect(screen, color,
-                             [x_offset * column + MARGIN, y_offset * row + MARGIN, WIDTH, HEIGHT])
+    draw_grid(grid)
     pygame.draw.rect(screen, SILVER, [905, 0, SCREEN_WIDTH-SCREEN_HEIGHT, SCREEN_HEIGHT]) 
     place_button(910, 10, 85, 30, 'Start node', 'calibri', BLACK, start_selected, node_color=GREEN)
     place_button(910, 50, 85, 30, 'End node', 'calibri', BLACK, end_selected, node_color=RED)
     place_button(910, 90, 85, 30, 'Wall node', 'calibri', BLACK, wall_selected, node_color=BLACK)
     place_button(910, 130, 85, 30, 'Run', 'calibri', BLACK, run_selected, node_color='None')
     place_button(910, 170, 85, 30, 'Clear', 'calibri', BLACK, clear_selected, node_color='None')
-            
-            
+               
 
     pygame.display.update()
 
