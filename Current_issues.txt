@@ -1,0 +1,5 @@
+When the board is cleared and then reran, the shortest path will sometimes not correctly be outputted
+
+Holding down mouse button no longer places wall nodes
+
+wall nodes can no longer be removed

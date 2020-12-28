@@ -2,7 +2,6 @@ import sys
 import pygame
 import random
 
-
 # returns the key in a dictionary given the value
 def get_key(dict, val):
 
@@ -59,6 +58,7 @@ class Graph:
 
     def __init__(self):
         self.vertices = {}
+        self.removed_vertices = {}
         self.num_vertices = 0
         self.start_node = None
         self.target_node = None
@@ -75,21 +75,39 @@ class Graph:
             return True
         else:
             return False
+    
+    def store_removed_vertex(self, node_key):
+        removed_vertex = self.get_vertex(node_key)
+        if isinstance(removed_vertex, Node) and node_key not in self.removed_vertices:
+            self.removed_vertices[node_key] = removed_vertex
+            return True
+        else: 
+            return False
 
     # method that removes a vertex from the graph (used for placing "wall nodes" in the grid)
     def remove_vertex(self, node_key):
+        self.store_removed_vertex(node_key)
         self.get_vertices().pop(node_key)
+    
+    def get_removed_vertex(self, node_key):
+        return self.removed_vertices[node_key]
+
+    def add_removed_vertex(self, node_key):
+        self.add_vertex(self.get_removed_vertex(node_key))
 
     # returns the vertex given the vertex key
-    def get_vertex(self, n):
-        if n in self.vertices:
-            return self.vertices[n]
+    def get_vertex(self, node_key):
+        if node_key in self.vertices:
+            return self.vertices[node_key]
         else:
             return None
 
     # returns the dictionary that contains the vertices
     def get_vertices(self):
         return self.vertices
+    
+    def get_removed_vertices(self):
+        return self.removed_vertices
 
     #returns the number of vertices in the graph
     def get_numVertices(self):
@@ -156,7 +174,6 @@ class Graph:
 
 
 
-
 def det_min_distance(queue):
     min_index = 0
     for i, node in enumerate(queue):
@@ -196,9 +213,9 @@ def djikstra(graph, start, end):
     cur_node = graph.get_vertex(end).get_pred_node()
     shortest_path = []
     while cur_node != start_node:
-
         shortest_path.insert(0, cur_node.get_name())
         cur_node = cur_node.get_pred_node()
+
     return shortest_path, visited_nodes
 
 
@@ -223,12 +240,8 @@ def main():
         for column in range(numCol):
             graph.add_vertex(Node(str(grid[row][column]), grid[row][column]))
 
-    walls = []
-    doors = []
-    recursive_maze(graph, 0, 0, 4, 4, walls, doors)
-
-    print(walls)
-
+    
+    print(pygame.font.get_fonts())
     
 
 
